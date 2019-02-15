@@ -1,0 +1,20 @@
+{
+  "name": "argo-bot",
+  "version": "0.0.0",
+  "description": "Simple Argo but to comment with diffs on PR",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "src"
+  ],
+  "scripts": {
+    "start": "probot run ./index.js"
+  },
+  "dependencies": {
+    "probot": "^7.0.1",
+    "probot-config": "^1.0.0"
+  },
+  "engines": {
+    "node": "8"
+  }
+}
