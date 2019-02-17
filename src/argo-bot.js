@@ -2,7 +2,7 @@
 // for example if user comments on PR with 'argo diff', bot execs -> helper script which runs 'argocd diff --local'
 const BOT_COMMAND = "argo"
 const BOT_ACTIONS = {
-    "diff": "./clone_and_diff.sh"
+    "diff": "./sh/clone_and_diff.sh"
 }
 
 module.exports = class ArgoBot {
