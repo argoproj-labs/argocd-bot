@@ -1,10 +1,10 @@
 module.exports  = handlePrRequest
 
-const getConfig = require('probot-config')
-const ArgoBot = require('./argo-bot')
+const getConfig = require("probot-config")
+const ArgoBot = require("./argo-bot")
 
 const DEFAULT_CONFIG = {
-  reposDir: 'repos'
+  reposDir: "repos"
 }
 
 
@@ -15,14 +15,14 @@ async function handlePrRequest(context, config) {
     const pr = context.payload.issue.pull_request
     const prCommentAuthor = context.payload.comment.user.login
 
-    // TODO properly use this
-    // const { reposDir } = await getConfig(context, 'argo-bot.yml', DEFAULT_OPTS)
+    // TODO properly use config
+    // const { reposDir } = await getConfig(context, "argo-bot.yml", DEFAULT_OPTS)
     if (!ArgoBot.isBotCommand(prComment)) {
-        context.log('Recieved a non-bot command=' + prComment + '; ignoring!')
+        context.log("Recieved a non-bot command=" + prComment + "; ignoring!")
         return
     }
 
     const repo = context.payload.repository
-    let bot = new ArgoBot(context, repo)
+    let bot = new ArgoBot(context)
     bot.handleCommand(prComment)
 }
