@@ -1,5 +1,5 @@
 # Argocd Bot
-A github bot that run diffs on PRs using `argocd` CLI. 
+A github bot that run diffs on PRs using `argocd` CLI.  
 Still a WIP. 
 
 
