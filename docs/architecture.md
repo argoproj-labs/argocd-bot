@@ -1,0 +1,1 @@
+# Argocd Bot Architecture
