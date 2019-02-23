@@ -1,5 +1,5 @@
 # Argocd Bot
-Simple bot to run argo diffs on PRs
+Simple bot to run argo diffs on PRs 
 Still a WIP.
 
 
