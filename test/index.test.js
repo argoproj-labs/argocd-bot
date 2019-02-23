@@ -16,15 +16,20 @@ describe('argo-cd-bot', () => {
     })
 
     // I'm not sure how to properly fix this
-    test('diff comment posted on PR', function (done)  {
+    test('diff comment posted on PR', async() => {
         nock('https://api.github.com')
             .post('/app/installations/2/access_tokens')
             .reply(200, {token: 'test'})
-        
+
+        const branch = "newBranch"
+        nock('https://api.github.com').get('/repos/robotland/test/pulls').reply(200, {"data": {"number": 109, "head": { "ref": branch}}})
+
         const child_process = require('child_process')
         const execStub = sinon.stub(child_process, 'exec')
+        // TODO I don't think this stub is working as expected
         execStub.returns({'stdout': 'test'})
-        probot.receive({name: 'issue_comment', payload})
+
+        await probot.receive({name: 'issue_comment', payload})
     })
 
     /*

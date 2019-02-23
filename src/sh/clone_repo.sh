@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
-# Helper scripts exec'd by argo-bot, to clone repo, check out branch of the current open PR, and diff using argo binary
-# stdout/stderr will go to the PR as a comment
+# Helper scripts exec'd by argocd-bot
+# - clones repo, check out latest branch of the current open PR
+# stdout will go to the PR as a comment, if exit code is non-zero argocd-bot will show the error in the log
+
 function usage_and_exit() {
     echo "${0} [repo path] [git repo to clone] [branch to check out]"
-    echo "script will run \"argocd diff --local\" on branch"
+    echo "Script will clone repo in [repo path] and check out latest changes in specified branch"
     exit 1
 }
 

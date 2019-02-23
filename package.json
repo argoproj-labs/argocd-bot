@@ -2,6 +2,7 @@
   "name": "argo-bot",
   "version": "0.0.0",
   "description": "Simple Argo but to comment with diffs on PR",
+  "repository": "https://github.com/marcb1/argocd-bot.git",
   "main": "index.js",
   "files": [
     "index.js",
