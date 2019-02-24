@@ -47,4 +47,8 @@ module.exports = class SingletonPrLock {
         }
         return false
     }
+
+    isLocked() {
+        return this.locked
+    }
 }

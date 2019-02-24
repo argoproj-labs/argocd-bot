@@ -14,7 +14,7 @@ const DEFAULT_CONFIG = {
 }*/
 
 async function handlePrClosed(context, config) {
-    const prNumber = context.payload.issue.number
+    const prNumber = context.payload.pull_request.number
 
     context.log("handlePrClosed, pr#" + prNumber)
 
