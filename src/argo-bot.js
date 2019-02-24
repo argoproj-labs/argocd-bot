@@ -124,7 +124,6 @@ module.exports = class ArgoBot {
             // valid argo action, try executing command in shell
             this.appContext.log("handling diff!")
             await this.handleDiff(this.argoAPI)
-            this.appContext.log("done!")
         }
         else {
             // TODO print helpful output
