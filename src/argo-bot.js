@@ -3,12 +3,10 @@ const ArgoAPI = require("./argo-api.js")
 const ArgoBotConfig = require("./argo-bot-config.js")
 
 // bot command that triggers this bot to wake up
-const BOT_COMMAND = "argo"
+const BotCommand = "argo"
 
-// supported commands, for example 'argo unlock'
-// TODO make these into an enum/properly encapsulate in an object
-const UNLOCK_COMMAND = "unlock"
-const DIFF_COMMAND = "diff"
+// supported actions, must be prefixed by BotCommand for example 'argo unlock'
+const BotActions = Object.freeze({"unlock":1, "diff":2 })
 
 module.exports = class ArgoBot {
     // checks if command is valid and can be processed by ArgoBot
@@ -18,7 +16,7 @@ module.exports = class ArgoBot {
         if (!arr || arr.length != 2) {
             return false
         }
-        else if (arr[0] != BOT_COMMAND) {
+        else if (arr[0] != BotCommand) {
             return false
         }
         return true
@@ -48,7 +46,7 @@ module.exports = class ArgoBot {
     // non-static functions here
 
     constructor(appContext) {
-        this.botCommand = BOT_COMMAND
+        this.botCommand = BotCommand
         this.appContext = appContext
         this.argoConfig = new ArgoBotConfig()
         this.argoAPI = new ArgoAPI(this.appContext, this.argoConfig.getAPIToken(), this.argoConfig.getServerIP())
@@ -69,7 +67,7 @@ module.exports = class ArgoBot {
         // this is a singleton
         let prLock = new PrLock()
         if (prLock.tryLock(prTitle, prNumber) === false) {
-            const lockMessage = prLock.getLockInfo() +  "; is holding the lock, please merge PR or comment with \`" + BOT_COMMAND + " unlock\` to release lock"
+            const lockMessage = prLock.getLockInfo() +  "; is holding the lock, please merge PR or comment with \`" + BotCommand + " unlock\` to release lock"
             ArgoBot.respondWithComment(this.appContext, lockMessage)
             return false
         }
@@ -113,7 +111,7 @@ module.exports = class ArgoBot {
         this.appContext.log("received command=" + command + ", for PR#" + prNumber)
 
         // if action is an unlock request, process it here and return
-        if (action === UNLOCK_COMMAND) {
+        if (action === BotActions.unlock) {
             return this.handleUnlockAction()
         }
 
@@ -122,7 +120,7 @@ module.exports = class ArgoBot {
             return
         }
         
-        if (action == DIFF_COMMAND) {
+        if (action == BotActions.diff) {
             // valid argo action, try executing command in shell
             this.appContext.log("handling diff!")
             this.handleDiff(this.argoAPI)
