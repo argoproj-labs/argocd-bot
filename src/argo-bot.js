@@ -150,7 +150,7 @@ module.exports = class ArgoBot {
             let appName = jsonItems[key]["metadata"]["name"]
             let gitPath = jsonItems[key]["spec"]["source"]["path"]
             const command = "./src/sh/diff_repo.sh " + repoDir + " " + appName + " " + gitPath
-            this.appContext.log("exec: " + command)
+            this.appContext.log("exec-ing: " + command)
             const res = await this.execCommand(command)
             const response = `Found diff: 
 \`\`\`  
