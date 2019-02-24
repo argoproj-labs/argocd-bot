@@ -70,7 +70,7 @@ See docs [here](docs/development.md)
 
 ## Minimal TODO
 - rename tokens, to `ARGOCD_SERVER` and `ARGOCD_AUTH_TOKEN`, see: https://github.com/argoproj/argo-cd/blob/master/docs/ci_automation.md
-- Fix up tests + more testing
+- Declare env variables in unit tests + add more tests + fix up current ones
 - Deployment for Kubernetes
 
 ## Future Work
