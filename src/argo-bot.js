@@ -6,7 +6,7 @@ const ArgoBotConfig = require("./argo-bot-config.js")
 const BotCommand = "argo"
 
 // supported actions, must be prefixed by BotCommand for example 'argo unlock'
-const BotActions = Object.freeze({"unlock":1, "diff":2 })
+const BotActions = Object.freeze({"Unlock":"unlock", "Diff": "diff" })
 
 module.exports = class ArgoBot {
     // checks if command is valid and can be processed by ArgoBot
@@ -111,7 +111,7 @@ module.exports = class ArgoBot {
         this.appContext.log("received command=" + command + ", for PR#" + prNumber)
 
         // if action is an unlock request, process it here and return
-        if (action === BotActions.unlock) {
+        if (action === BotActions.Unlock) {
             return this.handleUnlockAction()
         }
 
@@ -120,10 +120,10 @@ module.exports = class ArgoBot {
             return
         }
         
-        if (action == BotActions.diff) {
+        if (action == BotActions.Diff) {
             // valid argo action, try executing command in shell
             this.appContext.log("handling diff!")
-            this.handleDiff(this.argoAPI)
+            await this.handleDiff(this.argoAPI)
             this.appContext.log("done!")
         }
         else {
@@ -139,8 +139,10 @@ module.exports = class ArgoBot {
         const curBranch = await ArgoBot.getCurrentBranch(this.appContext, prNumber)
         const repoDir = "cloned_repos/pr_" + prNumber
 
+        const cloneCommand = "./src/sh/clone_repo.sh " + repoDir + " " + cloneUrl + " " + curBranch
+        this.appContext.log("exec-ing: " + cloneCommand)
         // clone repo and check out current branch
-        await this.execCommand("./src/sh/clone_repo.sh " + repoDir + " " + cloneUrl + " " + curBranch)
+        await this.execCommand(cloneCommand)
 
         const jsonResponse = await argoAPI.fetchAllApplications()
         const jsonItems = jsonResponse["items"]
@@ -148,9 +150,9 @@ module.exports = class ArgoBot {
         for (var key in jsonItems) {
             let appName = jsonItems[key]["metadata"]["name"]
             let gitPath = jsonItems[key]["spec"]["source"]["path"]
-            this.appContext.log(appName)
-            this.appContext.log(gitPath)
-            const res = await this.execCommand("./src/sh/diff_repo.sh " + repoDir + " " + appName + " " + gitPath)
+            const command = "./src/sh/diff_repo.sh " + repoDir + " " + appName + " " + gitPath
+            this.appContext.log("exec: " + command)
+            const res = await this.execCommand(command)
             const response = `Found diff: 
 \`\`\`  
 ${res.stdout}  

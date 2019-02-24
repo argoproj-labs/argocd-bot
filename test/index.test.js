@@ -26,7 +26,7 @@ describe('argo-cd-bot', () => {
 
         const child_process = require('child_process')
         const execStub = sinon.stub(child_process, 'exec')
-        // TODO I don't think this stub is working as expected
+        // this doesn't work, the bot gets stuck on child_process.exec and the test times out
         execStub.returns({'stdout': 'test'})
 
         await probot.receive({name: 'issue_comment', payload})
