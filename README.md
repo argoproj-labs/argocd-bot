@@ -72,3 +72,7 @@ See docs [here](docs/development.md)
 - rename tokens, to `ARGOCD_SERVER` and `ARGOCD_AUTH_TOKEN`, see: https://github.com/argoproj/argo-cd/blob/master/docs/ci_automation.md
 - Fix up tests + more testing
 - Deployment for Kubernetes
+
+## Future Work
+- tag releases in Github
+- look into Github deployment API
