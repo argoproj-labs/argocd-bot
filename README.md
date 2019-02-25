@@ -1,5 +1,6 @@
 # Argocd Bot
-A github bot that run diffs on PRs using `argocd` CLI.  
+A bot to help automate [argo-cd](https://github.com/argoproj/argo-cd) changes via Github.  
+Currently supports running diffs on open Pull Requests, check the Workflow section.  
 Still a WIP. 
 
 
