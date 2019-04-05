@@ -17,4 +17,4 @@ if [[ -z "${repo_path}" || -z "${app_name}" || -z "${dir}" ]]; then
     usage_and_exit
 fi
 
-cd ${repo_path} && cd * && argocd app diff ${app_name} --local=${dir}
+cd ${repo_path} && cd * && argocd app diff ${app_name} --local=${dir} --plaintext

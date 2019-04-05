@@ -25,12 +25,9 @@ async function handlePrClosed(context, config) {
 
 async function handlePrComment(context, config) {
     const prComment = context.payload.comment.body
-    const prTitle = context.payload.issue.title
-    const prAuthor = context.payload.issue.user.login
-    const pr = context.payload.issue.pull_request
-    const prCommentAuthor = context.payload.comment.user.login
+    const prNumber = context.payload.issue.number
 
-    context.log("handlePrComment")
+    context.log("handlePrComment, pr#" + prNumber)
     if (!ArgoBot.isBotCommand(prComment)) {
         context.log("Recieved a non-bot command=" + prComment + "; ignoring!")
         return
