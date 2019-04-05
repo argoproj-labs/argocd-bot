@@ -6,11 +6,11 @@ module.exports = class ArgoBotConfig {
     }
 
     getAPIToken() {
-        return this.config.ARGO_CD_API_TOKEN
+        return this.config.ARGOCD_AUTH_TOKEN
     }
 
     getServerIP() {
-        return this.config.ARGO_CD_SERVER_IP
+        return this.config.ARGOCD_SERVER
     }
 
     getGithubToken() {
