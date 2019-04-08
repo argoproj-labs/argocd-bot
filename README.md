@@ -1,8 +1,17 @@
 # Argocd Bot
-A bot to help automate [argo-cd](https://github.com/argoproj/argo-cd) changes via Github.  
-Currently supports running diffs on open Pull Requests, check the Workflow section.  
-Still a WIP. 
+A bot to help automate [argo-cd](https://github.com/argoproj/argo-cd) changes via Github PRs.  
+Currently supports running diffs on open Pull Requests, check the Workflow section for more, or comment `argo help` on an open PR.  
 
+## Benefits
+#### Easier Deployments/Fewer Mistages
+- Comment `argo diff` on an open PR, to view diff between local branch and Kubernetes cluster.
+- PR diffs can be easily reviewed by everyone.
+- Catch errors in the output of `argo diff` before applying changes.
+- Comment `argo sync [app name]` to deploy changes, and merge PR.
+
+#### Lock-down Deployments
+- Users can submit changes via Github (after PR approval), without needing cluster credentials.
+- Audit changes made to clusters via Github PRs/server logs.
 
 ## Workflow
 This section describes the workflow supported by the bot.
@@ -12,7 +21,7 @@ This section describes the workflow supported by the bot.
 - User comments with `argo diff` on the PR.
 - Bot checks out current state of PR and runs `argocd diff --local`. Diff output is posted on the PR as a comment.
 - Team can review code changes in the PR, and double check the posted diff.
-- User can iterate, making changes on the PR and re-comment with `argo diff` once they are ready.
+- Author can iterate, making changes on the PR and re-comment with `argo diff` once they are ready.
 - Deploying Changes:
   - If Auto Sync is enabled: once the PR is merged, ArgoCD server syncs it with production.
   - Otherwise, user can comment `argo sync [app name]` to sync changes from branch, before merging PR.
@@ -36,15 +45,6 @@ These are commands that are supported by the bot.
 - `argo rollback`: this rolls back latest change
 
 More commands might be added, run `argo help` on a PR, to view all supported commands.
-
-## Benefits
-#### Fewer Mistakes
-- Catch errors in the output of `argo diff` before applying changes to the cluster.
-- Apply changes from PR before merging to master.
-
-#### Lock-down Deployments
-- Users can submit changes via Github after PR approval, without needing cluster credentials
-- Audit changes made to clusters via Github PR/server logs.
 
 ## Deployment
 Docker based deployment is still a WIP.
