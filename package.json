@@ -13,6 +13,7 @@
     "start": "probot run ./lib/index.js",
     "test": "jest ./test/",
     "build": "tsc"
+    "manifests": "kustomize build ./deployment/base > deployment/install.yaml",
   },
   "dependencies": {
     "@types/jest": "^24.0.11",

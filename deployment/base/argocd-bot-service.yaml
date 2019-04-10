@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: argocd-bot
+  name: argocd-bot
+spec:
+  ports:
+  - port: 80
+    targetPort: 3000
+  selector:
+    app.kubernetes.io/name: argocd-bot
