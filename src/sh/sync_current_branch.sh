@@ -16,3 +16,4 @@ if [[ -z "${app_name}" || -z "${branch}" ]]; then
 fi
 
 argocd app sync ${app_name} --revision=${branch} --plaintext
+argocd app wait ${app_name} --sync --plaintext
