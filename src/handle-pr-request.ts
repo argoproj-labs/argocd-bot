@@ -5,7 +5,7 @@ module.exports = {
 
 const getConfig = require("probot-config")
 const ArgoBot = require("./argo-bot")
-const PrLock = require("./singleton-pr-lock.js")
+import { PrLock } from "./singleton-pr-lock"
 
 // TODO use yaml file instead of node env in the future
 /*const CONFIG_FILE = "argocd-bot.yaml"

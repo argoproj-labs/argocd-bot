@@ -1,9 +1,9 @@
 const nock = require("nock")
 const sinon = require("sinon")
+
 const { Probot } = require("probot")
 
 const ArgocdBot = require("..")
-const ArgoLock = require("../src/singleton-pr-lock.js")
 
 // test fixtures
 const payloadPr1 = require("./fixtures/issue_comment.created.pr1.json")

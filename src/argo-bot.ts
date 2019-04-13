@@ -1,7 +1,8 @@
-const PrLock = require("./singleton-pr-lock.js")
-const ArgoAPI = require("./argo-api.js")
-const ArgoBotConfig = require("./argo-bot-config.js")
-const to = require("./to.js")
+import { PrLock } from "./singleton-pr-lock"
+
+const ArgoAPI = require("./argo-api.ts")
+const ArgoBotConfig = require("./argo-bot-config.ts")
+const to = require("./to.ts")
 
 // bot command that triggers this bot to wake up
 const BotCommand = "argo"
@@ -63,6 +64,13 @@ module.exports = class ArgoBot {
         context.log.error("pr not found!")
     }
 
+    // ---------------------
+    // data members here
+    private botCommand
+    private appContext
+    private argoConfig
+    private argoAPI
+
     // ----------------------
     // non-static functions here
 
@@ -80,7 +88,7 @@ module.exports = class ArgoBot {
         const exec = require("child_process").exec
         let p = new Promise((done, failed) => {
             exec(command, (err, stdout, stderr) => {
-                let res = {}
+                let res: any = {}
                 res.stdout = stdout
                 res.stderr = stderr
                 if (err && err.code == failingExitCode) {

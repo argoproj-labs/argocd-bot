@@ -1,6 +1,8 @@
 // class that holds config params used by bot, for now this is reading from node env variables
 module.exports = class ArgoBotConfig {
-    
+
+    private config
+
     constructor() {
         this.config = process.env
     }
