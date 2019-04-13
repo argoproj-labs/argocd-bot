@@ -1,5 +1,10 @@
 // Singleton lock object shared by bot, this is to prevent multiple PR's from running at the same time
-module.exports = class SingletonPrLock {
+export class SingletonPrLock {
+
+    private activePrName
+    private activePrNumber
+    private locked
+    private static instance
 
     constructor() {
         if (typeof SingletonPrLock.instance === "object") {
@@ -52,3 +57,5 @@ module.exports = class SingletonPrLock {
         return this.locked
     }
 }
+
+export {SingletonPrLock as PrLock } from "./singleton-pr-lock";

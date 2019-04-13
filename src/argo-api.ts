@@ -1,6 +1,11 @@
-const fetch = require("node-fetch")
+const nodeFetch = require("node-fetch")
 
 module.exports = class ArgocdAPI {
+
+    private token
+    private serverIP
+    private fetchAllAppsFilter
+    private fetchAutoSyncAppsFilter
 
     constructor(appContext, token, serverIP) {
         this.token = token
@@ -10,7 +15,7 @@ module.exports = class ArgocdAPI {
     }
 
     async fetchHttp(url, token) {
-        const response = await fetch(url, { method: "GET", headers: { "Cookie": "argocd.token=" + this.token } })
+        const response = await nodeFetch(url, { method: "GET", headers: { "Cookie": "argocd.token=" + this.token } })
         const responseStatus = response.status
         if (responseStatus !== 200) {
             return {}

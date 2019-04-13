@@ -1,0 +1,14 @@
+{
+    "allowJs": false,
+    "pretty": true,
+    "strict": true,
+    "compilerOptions": {
+        "outDir": "./lib",
+        "allowJs": true,
+        "target": "es5"
+    },
+    "include": [
+        "./src/**/*",
+        "index.ts"
+    ]
+}

@@ -3,7 +3,7 @@ const sinon = require("sinon")
 const { Probot } = require("probot")
 
 const ArgocdBot = require("..")
-const ArgoLock = require("../src/singleton-pr-lock.js")
+import { PrLock } from "../src/singleton-pr-lock"
 
 // test fixtures
 const payloadPr1 = require("./fixtures/issue_comment.created.pr1.json")
@@ -64,7 +64,7 @@ describe("argo-cd-bot", () => {
         // first comment on PR1, should proceed and hold the lock
         await probot.receive({name: "issue_comment", payload: payloadPr1})
 
-        let lock = new ArgoLock()
+        let lock = new PrLock()
         expect(lock.isLocked()).toBe(true)
 
         // second comment on Pr2, should not proceed as PR1 holds the lock
@@ -100,7 +100,7 @@ describe("argo-cd-bot", () => {
        
         // first comment on PR1, should proceed and hold the lock
         await probot.receive({name: "issue_comment", payload: payloadPr1})
-        let lock = new ArgoLock()
+        let lock = new PrLock()
         expect(lock.isLocked()).toBe(true)
 
         // pull_request.closed event should release the lock
@@ -136,7 +136,7 @@ describe("argo-cd-bot", () => {
        
         // first comment on PR1, should proceed and hold the lock
         await probot.receive({name: "issue_comment", payload: payloadPr1})
-        let lock = new ArgoLock()
+        let lock = new PrLock()
         expect(lock.isLocked()).toBe(true)
 
         nock("https://api.github.com").post("/repos/robotland/test/issues/109/comments", /Lock has been released/).reply(200)
