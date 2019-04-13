@@ -25,6 +25,9 @@ This section describes the workflow supported by the bot.
 - Deploying Changes:
   - If Auto Sync is enabled: once the PR is merged, ArgoCD server syncs it with production.
   - Otherwise, user can comment `argo sync [app name]` to sync changes from branch, before merging PR.
+  
+### PR Example
+<img width="700" alt="pr-example" src="https://raw.githubusercontent.com/marcb1/argocd-bot/marcb/test/docs/readme-images/pr-example.png">
 
 ### Locking
 When any command is run on by a user, the PR holds a lock, until the it is merged, or `unlock` is run.
