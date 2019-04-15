@@ -353,7 +353,7 @@ ${syncRes.stdout}
             return await this.respondWithError("No Kubernetes deployments found, try running \`argo diff --all\`")
         }
 
-        const jsonItems = jsonArgoCDApps["items"]
+        const jsonItems = jsonArgoCDApps["items"].filter((item) => item["spec"]["source"]["repoURL"].indexOf(this.argoConfig.getGithubRepo()) > -1);
         let foundDiffs = false
         // for each app in the ArgoCD Server, attempt to diff with current directory in repo
         for (var key in jsonItems) {
