@@ -1,7 +1,6 @@
-const nock = require("nock")
-const sinon = require("sinon")
-
-const { Probot } = require("probot")
+import * as sinon from "sinon"
+import * as nock from "nock"
+import { Probot } from "probot"
 
 const ArgocdBot = require("..")
 
