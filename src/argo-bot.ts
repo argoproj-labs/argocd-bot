@@ -50,17 +50,36 @@ export class ArgoBot {
         await context.github.issues.createComment(response);
     }
 
+    // sets the status check on a PR, example args:
+    // state="success", description="message", context="argo/diff_success"
+    private static async setPrStatusCheck(context, stateString, descriptionString, contextString) {
+        const prNumber = context.payload.issue.number;
+        const branchContext = await ArgoBot.getCurrentBranchContext(context, prNumber);
+        await context.github.repos.createStatus({owner: branchContext.head.repo.owner.login, repo: branchContext.head.repo.name, sha: branchContext.head.sha, state: stateString, description: descriptionString, context: contextString});
+    }
+
+    private static async setDiffStatusCheck(context, state) {
+        context.log.info("setting status check=argo/diff state=", state);
+        await ArgoBot.setPrStatusCheck(context, state, "argo diff status", "argo/diff");
+    }
+
     // gets current branch name for pr with a specific number
-    private static async getCurrentBranch(context, prNumber) {
+    private static async getCurrentBranchContext(context, prNumber) {
         // I couldn't find an API call that filters this properly
         let prs = await context.github.pullRequests.list(context.repo());
         prs = prs["data"];
         for (const key in prs) {
             if (prs[key]["number"] === prNumber) {
-                return prs[key]["head"]["ref"];
+                return prs[key];
              }
         }
         context.log.error("pr not found!");
+    }
+
+    // gets current branch name for pr with a specific number
+    private static async getCurrentBranch(context, prNumber) {
+        const branchContext = await ArgoBot.getCurrentBranchContext(context, prNumber);
+        return branchContext["head"]["ref"];
     }
 
     // ---------------------
@@ -336,16 +355,19 @@ ${syncRes.stdout}
         if (err) {
             const errString = "exec returned an error while cloning repo : ```" + err.stderr + "```";
             this.appContext.log.error(errString);
+            await ArgoBot.setDiffStatusCheck(this.appContext, "failure");
             return await this.respondWithError(errString);
         }
 
         // if JSON response is empty that means we received an error querying the API
         if (Object.entries(jsonArgoCDApps).length === 0) {
+            await ArgoBot.setDiffStatusCheck(this.appContext, "failure");
             return await this.respondWithError("Empty JSON reponse, make sure the argocd API is reachable and the JWT token is valid");
         }
 
         // Otherwise if "items" is empty that means our filter did not find any deployments, for example if user specifies an empty directory using 'argo diff --dir somedir'
         if (Object.entries(jsonArgoCDApps["items"]).length === 0) {
+            await ArgoBot.setDiffStatusCheck(this.appContext, "failure");
             return await this.respondWithError("No Kubernetes deployments found, try running \`argo diff --all\`");
         }
 
@@ -362,6 +384,7 @@ ${syncRes.stdout}
             [diffErr, res] = await to(this.execCommand(command, failingExitCodeForDiff));
             if (diffErr) {
                 const errString = this.buildErrString(command, diffErr.stderr);
+                await ArgoBot.setDiffStatusCheck(this.appContext, "failure");
                 return await this.respondWithError(errString);
             }
             if (res.stdout === "") {
@@ -377,6 +400,7 @@ ${res.stdout}
 `;
             await ArgoBot.respondWithComment(this.appContext, response);
         }
+        await ArgoBot.setDiffStatusCheck(this.appContext, "success");
         if (foundDiffs) {
             const response = `
 If Auto-sync is enabled just merge this PR to deploy the above changes (to view if auto-sync is enabled run \`argo info [app name]\` and check the 'Sync Policy' field)
@@ -387,5 +411,5 @@ Otherwise, manual deployments can be done via \`argo sync\`, and rollbacks via \
             const response = "No diffs found!";
             await ArgoBot.respondWithComment(this.appContext, response);
         }
-     }
+    }
 }
