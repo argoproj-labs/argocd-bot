@@ -1,60 +1,61 @@
 // Singleton lock object shared by bot, this is to prevent multiple PR's from running at the same time
 export class SingletonPrLock {
 
-    private activePrName
-    private activePrNumber
-    private locked
-    private static instance
+    private static instance;
+
+    private activePrName;
+    private activePrNumber;
+    private locked;
 
     constructor() {
         if (typeof SingletonPrLock.instance === "object") {
             return SingletonPrLock.instance;
         }
-	
-        this.activePrName = ""
-        this.activePrNumber = -1
-        this.locked = false
 
-        SingletonPrLock.instance = this
-        return this
+        this.activePrName = "";
+        this.activePrNumber = -1;
+        this.locked = false;
+
+        SingletonPrLock.instance = this;
+        return this;
     }
 
-    tryLock(prName, prNumber) {
+    public tryLock(prName, prNumber) {
         // if no one is holding the lock, obtain it
         if (this.locked === false) {
-            this.activePrName = prName
-            this.activePrNumber = prNumber
-            this.locked = true
-            return true
+            this.activePrName = prName;
+            this.activePrNumber = prNumber;
+            this.locked = true;
+            return true;
         }
         // if a PR is attempting to lock and it already holds the lock, allow it to proceed
         if (this.locked === true && this.activePrNumber === prNumber) {
-            return true
+            return true;
         }
-        return false
+        return false;
     }
 
-    getPrNumber() {
-        return this.activePrNumber
+    public getPrNumber() {
+        return this.activePrNumber;
     }
 
-    getLockInfo() {
+    public getLockInfo() {
         if (this.locked === false) {
-            throw "Lock is not being held"
+            throw new Error("Lock is not being held");
         }
-        return "PR: `" + this.activePrName + "` #" + this.activePrNumber
+        return "PR: `" + this.activePrName + "` #" + this.activePrNumber;
     }
 
-    unlock(prNumber) {
+    public unlock(prNumber) {
         if (this.activePrNumber === prNumber) {
-            this.locked = false
-            return true
+            this.locked = false;
+            return true;
         }
-        return false
+        return false;
     }
 
-    isLocked() {
-        return this.locked
+    public isLocked() {
+        return this.locked;
     }
 }
 
