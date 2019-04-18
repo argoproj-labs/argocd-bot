@@ -1,8 +1,8 @@
 import { PrLock } from "./singleton-pr-lock"
 
-const ArgoAPI = require("./argo-api.ts")
-const ArgoBotConfig = require("./argo-bot-config.ts")
-const to = require("./to.ts")
+const ArgoAPI = require("./argo-api")
+const ArgoBotConfig = require("./argo-bot-config")
+const to = require("./to")
 
 // bot command that triggers this bot to wake up
 const BotCommand = "argo"
@@ -340,7 +340,9 @@ ${syncRes.stdout}
         let err, cloneRes
         [err, cloneRes] = await to(this.execCommand(cloneCommand))
         if (err) {
-            this.appContext.log.error("exec returned an error: ```" + err.stderr + "```")
+            let errString = "exec returned an error while cloning repo : ```" + err.stderr + "```"
+            this.appContext.log.error(errString)
+            return await this.respondWithError(errString)
         }
 
         // if JSON response is empty that means we received an error querying the API

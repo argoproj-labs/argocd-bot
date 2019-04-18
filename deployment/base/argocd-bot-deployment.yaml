@@ -16,62 +16,62 @@ spec:
       containers:
       - name: argocd-bot
         command: [npm, start]
-        image: argocd-bot:latest
+        image: marcb1/argocd-bot:v0.1
         env:
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
-        - name: PRIVATE_KEY_PATH
-          value: "/data/key.pem"
-        - name: ARGO_CD_SERVER_IP
-          valueFrom:
-            secretKeyRef:
-              name: argocd-bot-secret
-              key: ARGOCD_SERVER
-        - name: ARGOCD_SERVER
-          valueFrom:
-            secretKeyRef:
-              name: argocd-bot-secret
-              key: ARGOCD_SERVER
-        - name: ARGO_CD_API_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: argocd-bot-secret
-              key: TOKEN
-        - name: ARGOCD_AUTH_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: argocd-bot-secret
-              key: TOKEN
+        - name: LOG_LEVEL
+          value: "info"
+        - name: PORT
+          value: "8080"
         - name: APP_ID
           valueFrom:
             secretKeyRef:
               name: argocd-bot-secret
               key: APP_ID
-        - name: GITHUB_TOKEN
+        # if using github.com, this is not needed
+        - name: GHE_HOST
           valueFrom:
             secretKeyRef:
               name: argocd-bot-secret
-              key: GITHUB_TOKEN
+              key: GHE_HOST
         - name: GITHUB_REPO
           valueFrom:
             secretKeyRef:
               name: argocd-bot-secret
               key: GITHUB_REPO
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: argocd-bot-secret
+              key: GITHUB_TOKEN
         - name: WEBHOOK_SECRET
           valueFrom:
             secretKeyRef:
               name: argocd-bot-secret
               key: WEBHOOK_SECRET
+        - name: PRIVATE_KEY_PATH
+          value: "/data/key.pem"
+        - name: ARGOCD_SERVER
+          valueFrom:
+            secretKeyRef:
+              name: argocd-bot-secret
+              key: ARGOCD_SERVER
+        - name: ARGOCD_AUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: argocd-bot-secret
+              key: ARGOCD_AUTH_TOKEN
         volumeMounts:
         - name: app-private-key
           mountPath: "/data"
           readOnly: true
         imagePullPolicy: Always
         ports:
-        - containerPort: 3000
+        - containerPort: 8080
         readinessProbe:
           tcpSocket:
-            port: 3000
+            port: 8080
           initialDelaySeconds: 5
           periodSeconds: 1
       volumes:
