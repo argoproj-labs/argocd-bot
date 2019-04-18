@@ -77,7 +77,7 @@ spec:
             secretKeyRef:
               key: ARGOCD_AUTH_TOKEN
               name: argocd-bot-secret
-        image: marcb1/argocd-bot:v0.1
+        image: marcb1/argocd-bot:latest
         imagePullPolicy: Always
         name: argocd-bot
         ports:
