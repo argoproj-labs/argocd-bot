@@ -3,9 +3,9 @@ export class SingletonPrLock {
 
     private static instance;
 
-    private activePrName;
-    private activePrNumber;
-    private locked;
+    private activePrName: string;
+    private activePrNumber: number;
+    private locked: boolean;
 
     constructor() {
         if (typeof SingletonPrLock.instance === "object") {

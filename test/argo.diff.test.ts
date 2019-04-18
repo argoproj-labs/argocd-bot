@@ -24,6 +24,8 @@ describe("argo-cd-bot", () => {
         const app = probot.load(ArgocdBot)
         app.app = () => "test"
         sandbox = sinon.createSandbox();
+        // few tests take longer to finish than the default time out of 5000
+        jest.setTimeout(7000)
 
         // node env variables
         process.env.ARGOCD_AUTH_TOKEN = argoCDToken
@@ -46,6 +48,9 @@ describe("argo-cd-bot", () => {
         const appDir = "projects/app1"
 
         nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch}}})
+        // bot should get sha for commit and post status check on PR
+        nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch, "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e", "repo": { "id": 1296269, "node_id": "MDEwOlJlcG9zaXRvcnkxMjk2MjY5", "name": "Hello-World",  "full_name": "octocat/Hello-World", "owner": { "login": "octocat" }}}}});
+        nock("https://api.github.com").post("/repos/octocat/Hello-World/statuses/6dcb09b5b57875f334f61aebed695e2e4193db5e", /success/).reply(200)
 
         const child_process = require("child_process")
         const execStub = sandbox.stub(child_process, "exec")
@@ -75,6 +80,9 @@ describe("argo-cd-bot", () => {
         const appDir = "projects/app1"
 
         nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch}}})
+        nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch, "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e", "repo": { "id": 1296269, "node_id": "MDEwOlJlcG9zaXRvcnkxMjk2MjY5", "name": "Hello-World",  "full_name": "octocat/Hello-World", "owner": { "login": "octocat" }}}}});
+        // bot should post status check on PR
+        nock("https://api.github.com").post("/repos/octocat/Hello-World/statuses/6dcb09b5b57875f334f61aebed695e2e4193db5e", /failure/).reply(200)
 
         const child_process = require("child_process")
         const execStub = sandbox.stub(child_process, "exec")
@@ -101,6 +109,9 @@ describe("argo-cd-bot", () => {
         const appDir = "projects/app1"
 
         nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch}}})
+        nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch, "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e", "repo": { "id": 1296269, "node_id": "MDEwOlJlcG9zaXRvcnkxMjk2MjY5", "name": "Hello-World",  "full_name": "octocat/Hello-World", "owner": { "login": "octocat" }}}}});
+        // bot should post status check on PR
+        nock("https://api.github.com").post("/repos/octocat/Hello-World/statuses/6dcb09b5b57875f334f61aebed695e2e4193db5e", /failure/).reply(200)
 
         const child_process = require("child_process")
         const execStub = sandbox.stub(child_process, "exec")
@@ -131,6 +142,9 @@ describe("argo-cd-bot", () => {
         const appDir = "projects/app1"
 
         nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch}}})
+        nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch, "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e", "repo": { "id": 1296269, "node_id": "MDEwOlJlcG9zaXRvcnkxMjk2MjY5", "name": "Hello-World",  "full_name": "octocat/Hello-World", "owner": { "login": "octocat" }}}}});
+        // bot should post status check on PR
+        nock("https://api.github.com").post("/repos/octocat/Hello-World/statuses/6dcb09b5b57875f334f61aebed695e2e4193db5e", /success/).reply(200)
 
         const child_process = require("child_process")
         const execStub = sandbox.stub(child_process, "exec")
@@ -163,6 +177,9 @@ describe("argo-cd-bot", () => {
         const appDir = "projects/app1"
 
         nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch}}})
+        nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch, "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e", "repo": { "id": 1296269, "node_id": "MDEwOlJlcG9zaXRvcnkxMjk2MjY5", "name": "Hello-World",  "full_name": "octocat/Hello-World", "owner": { "login": "octocat" }}}}});
+        // bot should post status check on PR
+        nock("https://api.github.com").post("/repos/octocat/Hello-World/statuses/6dcb09b5b57875f334f61aebed695e2e4193db5e", /success/).reply(200)
 
         const child_process = require("child_process")
         const execStub = sandbox.stub(child_process, "exec")
@@ -194,7 +211,6 @@ describe("argo-cd-bot", () => {
         const appDir = "projects/app1"
 
         nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch}}})
-
         const child_process = require("child_process")
         const execStub = sandbox.stub(child_process, "exec")
         // first exec, will fork script to clone repo
@@ -209,6 +225,10 @@ describe("argo-cd-bot", () => {
         // regex match post body should match diff produced by API
         nock("https://api.github.com").post("/repos/robotland/test/issues/109/comments", /===== App Diff ====/).reply(200)
         nock("https://api.github.com").post("/repos/robotland/test/issues/109/comments", /If Auto-sync is enabled just merge this PR to deploy the above changes/).reply(200)
+
+        // bot should post status check on PR
+        nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch, "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e", "repo": { "id": 1296269, "node_id": "MDEwOlJlcG9zaXRvcnkxMjk2MjY5", "name": "Hello-World",  "full_name": "octocat/Hello-World", "owner": { "login": "octocat" }}}}});
+        nock("https://api.github.com").post("/repos/octocat/Hello-World/statuses/6dcb09b5b57875f334f61aebed695e2e4193db5e", /success/).reply(200)
 
         await probot.receive({name: "issue_comment", payload: payloadPr1})
     })
@@ -225,6 +245,9 @@ describe("argo-cd-bot", () => {
         const appDir = "projects/app1"
 
         nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch}}})
+        nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch, "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e", "repo": { "id": 1296269, "node_id": "MDEwOlJlcG9zaXRvcnkxMjk2MjY5", "name": "Hello-World",  "full_name": "octocat/Hello-World", "owner": { "login": "octocat" }}}}});
+        // bot should post status check on PR
+        nock("https://api.github.com").post("/repos/octocat/Hello-World/statuses/6dcb09b5b57875f334f61aebed695e2e4193db5e", /success/).reply(200)
 
         const child_process = require("child_process")
         const execStub = sandbox.stub(child_process, "exec")
@@ -259,6 +282,9 @@ describe("argo-cd-bot", () => {
         const appDir = "projects/app1"
 
         nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch}}})
+        nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch, "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e", "repo": { "id": 1296269, "node_id": "MDEwOlJlcG9zaXRvcnkxMjk2MjY5", "name": "Hello-World",  "full_name": "octocat/Hello-World", "owner": { "login": "octocat" }}}}});
+        // bot should post status check on PR
+        nock("https://api.github.com").post("/repos/octocat/Hello-World/statuses/6dcb09b5b57875f334f61aebed695e2e4193db5e", /success/).reply(200)
 
         const child_process = require("child_process")
         const execStub = sandbox.stub(child_process, "exec")

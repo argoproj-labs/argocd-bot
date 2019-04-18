@@ -59,6 +59,13 @@ Create a new GitHub App [here](https://github.com/settings/apps/new).
 - Check the generated `APP_ID` by Github.
 For more on creating Github apps [see](https://probot.github.io/docs/development/#manually-configuring-a-github-app)
 
+### Required Permissions for Github App
+Please give the argo-cd app the following permissions:
+```
+Read access to administration and metadata
+Read and write access to commit statuses, issues, and pull requests 
+```
+
 ### Update Config
 There is an `.env_example` file that should be renamed to `.env`. NodeJS will read that file and expose the variables to the bot, when running locally.  
 When running in Kubernetes, there is a helper script to create k8s secrets from that file (more on this in the kubernetes deployment section).  
