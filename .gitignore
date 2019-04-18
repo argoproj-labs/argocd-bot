@@ -4,4 +4,3 @@ gh_keys
 package-lock.json
 node_modules
 lib/
-deployment/install.yaml

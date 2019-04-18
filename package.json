@@ -10,7 +10,7 @@
     }
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp -r ./src/sh ./lib/",
     "test": "jest ./test/",
     "start": "probot run ./lib/index.js",
     "manifests": "kustomize build ./deployment/base > deployment/install.yaml"

@@ -3,7 +3,7 @@ FROM argoproj/argocd:$ARGOCD_VERSION as argocd
 
 FROM node:11.10.1-slim
 
-RUN apt-get update && apt-get install -y git apt-utils sudo python make && \
+RUN apt-get update && apt-get install -y git apt-utils sudo python make vim procps && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -23,9 +23,13 @@ RUN groupadd -g 999 argocd && \
 RUN echo "argocd ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 COPY --chown=argocd . ./
+COPY --chown=argocd deployment/diff_helper.sh /usr/local/bin/diff_helper
 #workaround https://github.com/golang/go/issues/14625
 ENV USER=argocd
 USER argocd
+
+# used by argocd cli tool, makes diff prettier for github markdown
+ENV KUBECTL_EXTERNAL_DIFF=/usr/local/bin/diff_helper
 
 # run npm as argocd user
 RUN npm install && npm run build && npm run test

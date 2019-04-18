@@ -4,9 +4,12 @@ metadata:
   labels:
     app.kubernetes.io/name: argocd-bot
   name: argocd-bot
+  annotations:
+    cloud.google.com/load-balancer-type: "Internal"
 spec:
+  type: LoadBalancer
   ports:
   - port: 80
-    targetPort: 3000
+    targetPort: 8080
   selector:
     app.kubernetes.io/name: argocd-bot

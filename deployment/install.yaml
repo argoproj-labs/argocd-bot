@@ -1,15 +1,18 @@
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    cloud.google.com/load-balancer-type: Internal
   labels:
     app.kubernetes.io/name: argocd-bot
   name: argocd-bot
 spec:
   ports:
   - port: 80
-    targetPort: 3000
+    targetPort: 8080
   selector:
     app.kubernetes.io/name: argocd-bot
+  type: LoadBalancer
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -33,58 +36,57 @@ spec:
         env:
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
-        - name: PRIVATE_KEY_PATH
-          value: /data/key.pem
-        - name: ARGO_CD_SERVER_IP
-          valueFrom:
-            secretKeyRef:
-              key: ARGOCD_SERVER
-              name: argocd-bot-secret
-        - name: ARGOCD_SERVER
-          valueFrom:
-            secretKeyRef:
-              key: ARGOCD_SERVER
-              name: argocd-bot-secret
-        - name: ARGO_CD_API_TOKEN
-          valueFrom:
-            secretKeyRef:
-              key: TOKEN
-              name: argocd-bot-secret
-        - name: ARGOCD_AUTH_TOKEN
-          valueFrom:
-            secretKeyRef:
-              key: TOKEN
-              name: argocd-bot-secret
+        - name: LOG_LEVEL
+          value: info
+        - name: PORT
+          value: "8080"
         - name: APP_ID
           valueFrom:
             secretKeyRef:
               key: APP_ID
               name: argocd-bot-secret
-        - name: GITHUB_TOKEN
+        - name: GHE_HOST
           valueFrom:
             secretKeyRef:
-              key: GITHUB_TOKEN
+              key: GHE_HOST
               name: argocd-bot-secret
         - name: GITHUB_REPO
           valueFrom:
             secretKeyRef:
               key: GITHUB_REPO
               name: argocd-bot-secret
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: GITHUB_TOKEN
+              name: argocd-bot-secret
         - name: WEBHOOK_SECRET
           valueFrom:
             secretKeyRef:
               key: WEBHOOK_SECRET
               name: argocd-bot-secret
-        image: argocd-bot:latest
+        - name: PRIVATE_KEY_PATH
+          value: /data/key.pem
+        - name: ARGOCD_SERVER
+          valueFrom:
+            secretKeyRef:
+              key: ARGOCD_SERVER
+              name: argocd-bot-secret
+        - name: ARGOCD_AUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: ARGOCD_AUTH_TOKEN
+              name: argocd-bot-secret
+        image: marcb1/argocd-bot:v0.1
         imagePullPolicy: Always
         name: argocd-bot
         ports:
-        - containerPort: 3000
+        - containerPort: 8080
         readinessProbe:
           initialDelaySeconds: 5
           periodSeconds: 1
           tcpSocket:
-            port: 3000
+            port: 8080
         volumeMounts:
         - mountPath: /data
           name: app-private-key

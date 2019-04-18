@@ -50,8 +50,6 @@ These are commands that are supported by the bot.
 More commands might be added, run `argo help` on a PR, to view all supported commands.
 
 ## Deployment
-Docker based deployment is still a WIP.
-To run the bot for now follow the steps below:
 
 ### Create a Github App
 Create a new GitHub App [here](https://github.com/settings/apps/new).  
@@ -62,35 +60,35 @@ Create a new GitHub App [here](https://github.com/settings/apps/new).
 For more on creating Github apps [see](https://probot.github.io/docs/development/#manually-configuring-a-github-app)
 
 ### Update Config
-There is an `.env_example` file, that file should be renamed to `.env`. NodeJS will read that file and expose the variables to the bot.  
+There is an `.env_example` file that should be renamed to `.env`. NodeJS will read that file and expose the variables to the bot, when running locally.  
+When running in Kubernetes, there is a helper script to create k8s secrets from that file (more on this in the kubernetes deployment section).  
 Here is a description of each parameter:
 - `PORT` is the port that bot will listen on via HTTP.
-- `WEBHOOK_SECRET` is the secret configured when creating the Github app (can be left empty if no secret is specified).
 - `LOG_LEVEL` can be set to `trace`, `debug`, `info`, `warn`, `error`, or `fatal`.
-- `APP_ID` is the app id corresponding to the Github app (this is generated on app creation).
-- `PRIVATE_KEY_PATH` is the path to the private key generated for the Github app, this is usually a `.pem` file.
-- `GHE_HOST` for Github enterprise installations, specify the hostname. Otherwise leave blank, bot will use Github.com
-- `ARGOCD_AUTH_TOKEN` it is recommended to generate an automation token using the `/api/v1/projects/{project}/roles/{role}/token` API. For more information [see](https://github.com/argoproj/argo-cd/blob/master/docs/security.md#authentication)
-- `ARGOCD_SERVER`, this is the ip address/hostname of the argocd server.
-- `GITHUB_TOKEN` generate a Github token for the bot, and give it no scopes. This is just used to clone the repo.
-- `GITHUB_REPO` this is the repo that the bot will operate on.
 - `KUBECTL_EXTERNAL_DIFF` this is used by `argocd diff`, we pass a helper script to pretti-fy diffs posted on the PR.
+- `APP_ID` is the app id corresponding to the Github app (this is generated on app creation).
+- `GHE_HOST` for Github enterprise installations, specify the hostname. Otherwise leave blank, bot will use Github.com
+- `GITHUB_REPO` this is the repo that the bot will operate on.
+- `GITHUB_TOKEN` generate a Github token for the bot, and give it no scopes. This is just used to clone the repo.
+- `WEBHOOK_SECRET` is the secret configured when creating the Github app (can be left empty if no secret is specified).
+- `PRIVATE_KEY_PATH` is the path to the private key generated for the Github app, this is usually a `.pem` file.
+- `ARGOCD_SERVER`, this is the ip address/hostname of the argocd server.
+- `ARGOCD_AUTH_TOKEN` it is recommended to generate an automation token using the `/api/v1/projects/{project}/roles/{role}/token` API. For more information [see](https://github.com/argoproj/argo-cd/blob/master/docs/security.md#authentication)
 
-### Starting Server
-`npm install && npm start`
+### Kubernetes Deployment
+Docker images of `argocd-bot` are built [here](https://cloud.docker.com/repository/docker/marcb1/argocd-bot), they are provided as part of releases [here](https://github.com/marcb1/argocd-bot/releases)
 
+Check the config section above, once you have a `.env` file that's populated with the correct values run `./helper_scripts/create_kubectl_secrets.sh`.  
+This will generated a k8s secret `argocd-bot-secret` used by the deployment.  
 
-## Architecture
-See docs [here](./docs/architecture.md)
+Build manifests using `kustomize`:
+`npm run manifests`
 
+Create deployment from manifests:
+`kubectl create -f deployment/install.yaml`
+
+### Manual Deployment
+See docs [here](./docs/development.md#manual-deployment)
 
 ## Development/Contributing
 See docs [here](docs/development.md)
-
-
-## Minimal TODO
-- Deployment for Kubernetes
-
-## Future Work
-- tag releases in Github
-- look into Github deployment API
