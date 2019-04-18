@@ -1,8 +1,8 @@
-module.exports = function to(promise) {
+export function to(promise) {
    return promise.then(data => {
       return [null, data];
    })
-   .catch(err => { 
-       return [err, null]
+   .catch(err => {
+       return [err, null];
    });
 }

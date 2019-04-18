@@ -1,25 +1,25 @@
-// class that holds config params used by bot, for now this is reading from node env variables
-module.exports = class ArgoBotConfig {
+// class that holds config params used by bot, for now this is reading from node env variables;
+export class ArgoBotConfig {
 
-    private config
+    private config;
 
     constructor() {
-        this.config = process.env
+        this.config = process.env;
     }
 
-    getAPIToken() {
-        return this.config.ARGOCD_AUTH_TOKEN
+    public getAPIToken() {
+        return this.config.ARGOCD_AUTH_TOKEN;
     }
 
-    getServerIP() {
-        return this.config.ARGOCD_SERVER
+    public getServerIP() {
+        return this.config.ARGOCD_SERVER;
     }
 
-    getGithubToken() {
-        return this.config.GITHUB_TOKEN
+    public getGithubToken() {
+        return this.config.GITHUB_TOKEN;
     }
 
-    getGithubRepo() {
-        return this.config.GITHUB_REPO
+    public getGithubRepo() {
+        return this.config.GITHUB_REPO;
     }
 }
