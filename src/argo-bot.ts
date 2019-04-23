@@ -63,6 +63,11 @@ export class ArgoBot {
         await ArgoBot.setPrStatusCheck(context, state, "argo diff status", "argo/diff");
     }
 
+    private static async setSyncStatusCheck(context, state) {
+        context.log.info("setting status check=argo/sync state=", state);
+        await ArgoBot.setPrStatusCheck(context, state, "argo sync status", "argo/sync");
+    }
+
     // gets current branch name for pr with a specific number
     private static async getCurrentBranchContext(context, prNumber) {
         // I couldn't find an API call that filters this properly
@@ -322,6 +327,8 @@ ${syncRes.stdout}
     }
 
     private async handleSync(appName) {
+        await ArgoBot.setSyncStatusCheck(this.appContext, "pending");
+
         const prNumber = this.appContext.payload.issue.number;
         const curBranch = await ArgoBot.getCurrentBranch(this.appContext, prNumber);
         const syncCommand = "./src/sh/sync_current_branch.sh " + appName + " " + curBranch;
@@ -329,6 +336,7 @@ ${syncRes.stdout}
         let err, syncRes;
         [err, syncRes] = await to(this.execCommand(syncCommand));
         if (err) {
+            await ArgoBot.setSyncStatusCheck(this.appContext, "failure");
             const errString = this.buildErrString(syncCommand, err.stderr);
             return await this.respondWithError(errString);
         }
@@ -338,6 +346,7 @@ Sync Success!
 ${syncRes.stdout}
 \`\`\`
 `;
+        await ArgoBot.setSyncStatusCheck(this.appContext, "success");
         await ArgoBot.respondWithComment(this.appContext, res);
     }
 
@@ -353,7 +362,7 @@ ${syncRes.stdout}
         let err, cloneRes;
         [err, cloneRes] = await to(this.execCommand(cloneCommand));
         if (err) {
-            const errString = "exec returned an error while cloning repo : ```" + err.stderr + "```";
+            const errString = this.buildErrString("git clone and checkout of " + curBranch, err.stderr);
             this.appContext.log.error(errString);
             await ArgoBot.setDiffStatusCheck(this.appContext, "failure");
             return await this.respondWithError(errString);
