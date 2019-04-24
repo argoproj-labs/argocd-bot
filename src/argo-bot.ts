@@ -26,7 +26,7 @@ const BotHelp = Object.freeze({Diff: diffHelp,
                                History: "[Not yet supported] history [app name], prints deployment history of app",
                                Info: "usage: 'info [app name]`, view info for a specific app",
                                Preview: "[Not yet supported] deploy temporary PR",
-                               Rollback: "rollback [action: view or run] [app name], use 'rollback view app' to see latest deployment info, use 'rollback run app' to rollback latest deployment, verify rollback using diff command",
+                               Rollback: "rollback [optional: --dry-run or -d] [app name], use 'rollback --dry-run app' or 'rollback -d app' to see latest deployment info, use 'rollback app' to rollback the latest deployment to the previous one, verify rollback using diff command",
                                Sync: "usage: `sync [app name]`, syncs deployment in GKE cluster with manifests or helm charts using branch in current PR",
                                Unlock: "removes lock held by current PR, allows other PR's to run bot"});
 
@@ -138,7 +138,7 @@ export class ArgoBot {
         }
 
         if (action === BotActions.Rollback) {
-            if (arr[2] && arr[3]) {
+            if (arr[2] || (arr[3] && arr[3])) {
                 return await this.handleRollback(arr[2], arr[3]);
             }
         }
@@ -286,7 +286,12 @@ ${stderr}
     }
 
     private async handleRollback(action, appName) {
-        const rollbackCommand = "./src/sh/rollback_latest_deployment.sh " + action + " " + appName;
+        let rollbackCommand = "./src/sh/rollback_latest_deployment.sh ";
+        if (action) {
+            rollbackCommand += action + " " + appName;
+        } else {
+            rollbackCommand += appName;
+        }
         this.appContext.log("exec-ing: " + rollbackCommand);
         let err, syncRes;
         [err, syncRes] = await to(this.execCommand(rollbackCommand));
@@ -295,9 +300,7 @@ ${stderr}
             return await this.respondWithError(errString);
         }
         let res = "";
-        if (action === "view") {
-            res += "A rollback will revert this latest change:";
-        } else if (action === "run") {
+        if (!action) {
             res += "Rollback Successful!";
         }
         res += `
@@ -406,14 +409,15 @@ ${syncRes.stdout}
 \`\`\`diff
 ${res.stdout}
 \`\`\`
+Run \`argo sync ${appName}\` to apply these changes.
 `;
             await ArgoBot.respondWithComment(this.appContext, response);
         }
         await ArgoBot.setDiffStatusCheck(this.appContext, "success");
         if (foundDiffs) {
             const response = `
-If Auto-sync is enabled just merge this PR to deploy the above changes (to view if auto-sync is enabled run \`argo info [app name]\` and check the 'Sync Policy' field)
-Otherwise, manual deployments can be done via \`argo sync\`, and rollbacks via \`argo rollback\` for usage see \`argo help\`.
+If Auto-sync is enabled just merge this PR to deploy the above changes (to view if auto-sync is enabled run \`argo info [app name]\` and check the \`Sync Policy\` field)
+Otherwise, manual deployments can be done via \`argo sync\`, and rollbacks via \`argo rollback\` for usage, see \`argo help\`.
 `;
             await ArgoBot.respondWithComment(this.appContext, response);
         } else {

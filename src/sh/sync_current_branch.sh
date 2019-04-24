@@ -15,6 +15,5 @@ if [[ -z "${app_name}" || -z "${branch}" ]]; then
     usage_and_exit
 fi
 
-argocd app sync ${app_name} --revision=${branch} --plaintext
 # 10 second timeout
-argocd app wait ${app_name} --operation --timeout=10 --plaintext
+argocd app sync ${app_name} --revision=${branch} --plaintext && argocd app wait ${app_name} --operation --timeout=10 --plaintext
