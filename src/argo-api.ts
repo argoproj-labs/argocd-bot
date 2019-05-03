@@ -44,6 +44,10 @@ export class ArgoAPI {
         const jsonItems = responseJson["items"];
         // filter out applications that don't have an auto-sync policy
         for (const key of Object.keys(jsonItems)) {
+            const valid = ("spec" in jsonItems[key] && "source" in jsonItems[key]["spec"] && "path" in jsonItems[key]["spec"]["source"]);
+            if (!valid) {
+                continue;
+            }
             const gitPath = jsonItems[key]["spec"]["source"]["path"];
             if (!gitPath.includes(dir)) {
                 delete jsonItems[key];
