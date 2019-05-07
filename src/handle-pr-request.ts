@@ -26,7 +26,9 @@ async function handlePrClosed(context, config) {
 
 async function handlePrComment(context, config) {
     // strip away new lines from the comment string if any exist
-    const prComment: string = context.payload.comment.body.replace(/(\r\n|\n|\r)/gm, "");
+    let prComment: string = context.payload.comment.body.replace(/(\r\n|\n|\r)/gm, "");
+    // replace multiple spaces with a single space
+    prComment = prComment.replace(/\s\s+/g, " ");
     const prNumber = context.payload.issue.number;
 
     context.log("handlePrComment, pr#" + prNumber);
