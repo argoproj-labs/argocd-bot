@@ -17,6 +17,8 @@ export class ArgoAPI {
     }
 
     public async fetchHttp(url, token) {
+        // swagger UI for API docs: https://${ARGO_CD_SERVER}/swagger-ui
+        // curl command:  curl -v -H 'Cookie: argocd.token=${ARGO_API_TOKEN} http://${ARGO_CD_SERVER}/api/v1/applications
         const response = await nodeFetch(url, { method: "GET", headers: { Cookie: "argocd.token=" + this.token } });
         const responseStatus = response.status;
         if (responseStatus !== 200) {
@@ -52,6 +54,11 @@ export class ArgoAPI {
 
         if (Object.keys(responseJson).length === 0 || !("items" in responseJson)) {
             return responseJson;
+        }
+
+        if (jsonItems == null) {
+            this.context.log.info(url, "; received empty json response=", responseJson);
+            return {};
         }
 
         // filter out applications that don't have an auto-sync policy

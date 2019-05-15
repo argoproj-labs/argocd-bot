@@ -378,7 +378,7 @@ ${syncRes.stdout}
         }
 
         // Otherwise if "items" is empty that means our filter did not find any deployments, for example if user specifies an empty directory using 'argo diff --dir somedir'
-        if (Object.entries(jsonArgoCDApps["items"]).length === 0) {
+        if ((jsonArgoCDApps["items"] == null) || Object.entries(jsonArgoCDApps["items"]).length === 0) {
             await ArgoBot.setDiffStatusCheck(this.appContext, "failure");
             return await this.respondWithError("No Kubernetes deployments found, try running \`argo diff --all\`");
         }
