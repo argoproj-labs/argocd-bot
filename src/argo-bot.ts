@@ -345,6 +345,7 @@ ${syncRes.stdout}
         }
         const res = `
 Sync Success!
+Please merge this PR.
 \`\`\`
 ${syncRes.stdout}
 \`\`\`
