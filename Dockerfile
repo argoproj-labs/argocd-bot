@@ -12,6 +12,7 @@ WORKDIR /home/argocd/argocd-bot
 COPY --from=argocd /usr/local/bin/argocd /usr/local/bin/argocd
 COPY --from=argocd /usr/local/bin/helm /usr/local/bin/helm
 COPY --from=argocd /usr/local/bin/kustomize /usr/local/bin/kustomize
+COPY --from=argocd /usr/local/bin/kustomize /usr/local/bin/kustomize1
 COPY --from=argocd /usr/local/bin/ks /usr/local/bin/ks
 
 RUN groupadd -g 999 argocd && \
