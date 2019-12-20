@@ -3,7 +3,7 @@ A bot to help automate [argo-cd](https://github.com/argoproj/argo-cd) changes vi
 Currently supports running diffs on open Pull Requests, check the Workflow section for more, or comment `argo help` on an open PR.  
 
 ## Benefits
-#### Easier Deployments/Fewer Mistages
+#### Easier Deployments/Fewer Mistakes
 - Comment `argo diff` on an open PR, to view diff between local branch and Kubernetes cluster.
 - PR diffs can be easily reviewed by everyone.
 - Catch errors in the output of `argo diff` before applying changes.
