@@ -164,10 +164,10 @@ export class ArgoBot {
                 this.appContext.log("Received diff command with" + BotDiffActions.Dir);
                 jsonResponse = await this.argoAPI.fetchAppsWithDirectory(arr[3]);
                 return await this.handleDiff(jsonResponse);
-            } else if (arr[2] && (arr[2] === BotDiffActions.App || arr[2] === BotDiffActions.AppShortShort) && arr[3]) {
+            } else if (arr[2] && (arr[2] === BotDiffActions.App || arr[2] === BotDiffActions.AppShort) && arr[3]) {
                 this.appContext.log("Received diff command with" + BotDiffActions.App);
-                appDir = await this.argoAPI.fetchDirForAppWithName(arr[3]);
-                jsonResponse = {"items": [{"metadata": { "name": arr[3]}, "spec": { "source": { "path": appDir } } }] })
+                const appDir = await this.argoAPI.fetchDirForAppWithName(arr[3]);
+                jsonResponse = {items: [{metadata: { name: arr[3]}, spec: { source: { path: appDir } } }] };
                 return await this.handleDiff(jsonResponse);
             } else if (arr[2]) {
                 // if arr[2] is not empty, then it's not a valid diff arg, notify user

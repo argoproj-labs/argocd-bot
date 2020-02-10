@@ -79,8 +79,9 @@ export class ArgoAPI {
         const url = "http://" + this.serverIP + "/api/v1/applications/" + appName;
         const responseJson = await this.fetchHttp(url, this.token);
 
-        if (!responseJson.hasOwnProperty("metadata")) {
-            return {}
+        if (!responseJson.hasOwnProperty("metadata") || !responseJson.hasOwnProperty("spec") || !responseJson["spec"].hasOwnProperty("source") ||
+            !responseJson["spec"]["source"].hasOwnProperty("path")) {
+            return {};
         }
         return responseJson["spec"]["source"]["path"];
     }
