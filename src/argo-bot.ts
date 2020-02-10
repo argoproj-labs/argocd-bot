@@ -20,8 +20,8 @@ supported flags:
 --auto-sync: diffs all apps with auto sync enabled against yaml files/helm charts on current branch
 --dir [dir name] or -d [dir name]: diffs all yaml files/helm charts in a specific directory against what's deployed in GKE
                                    will look in subdirectories i.e 'argo diff -d /abc' will also check attempt to diff all deployments in 'abc' dir
---app [app name] or -a [app name]: diffs all yaml manifests/helm charts for a specific app against what's deploymed in GKE
-                                   will look in subdirectories where argo app is deployed i.e 'argo app diff -a quickset' will diff against 'projects/quickset/quickset'
+--app [app name] or -a [app name]: diffs all yaml manifests/helm charts for a specific app against what's deployed in GKE
+                                   will look in subdirectories where argo app is deployed i.e 'argo app diff -a app1' will diff against git repo where app1 manifests reside
 --all: diffs all apps on current branch against what's deployed in GKE (default behavior)`;
 
 const BotHelp = Object.freeze({Diff: diffHelp,
