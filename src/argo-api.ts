@@ -75,6 +75,16 @@ export class ArgoAPI {
         return responseJson;
      }
 
+    public async fetchDirForAppWithName(appName) {
+        const url = "http://" + this.serverIP + "/api/v1/applications/" + appName;
+        const responseJson = await this.fetchHttp(url, this.token);
+
+        if (!responseJson.hasOwnProperty("metadata")) {
+            return {}
+        }
+        return responseJson["spec"]["source"]["path"];
+    }
+
     private async fetchAllApplications() {
         const url = "http://" + this.serverIP + "/api/v1/applications?fields=" + this.fetchAllAppsFilter;
         const responseJson = await this.fetchHttp(url, this.token);
