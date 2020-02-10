@@ -10,7 +10,7 @@ const BotCommand = "argo";
 // supported actions, must be prefixed by BotCommand for example 'argo unlock'
 const BotActions = Object.freeze({Unlock: "unlock", Diff: "diff", Sync: "sync", Preview: "preview", Info: "info", History: "history", Rollback: "rollback", Help: "help"});
 // supported diff flags
-const BotDiffActions = Object.freeze({AutoSync: "--auto-sync", All: "--all", Dir: "--dir", DirShort: "-d"});
+const BotDiffActions = Object.freeze({AutoSync: "--auto-sync", All: "--all", Dir: "--dir", DirShort: "-d", App: "--app", AppShort: "-a"});
 
 // help string for actions
 const diffHelp = `
@@ -20,6 +20,8 @@ supported flags:
 --auto-sync: diffs all apps with auto sync enabled against yaml files/helm charts on current branch
 --dir [dir name] or -d [dir name]: diffs all yaml files/helm charts in a specific directory against what's deployed in GKE
                                    will look in subdirectories i.e 'argo diff -d /abc' will also check attempt to diff all deployments in 'abc' dir
+--app [app name] or -a [app name]: diffs all yaml manifests/helm charts for a specific app against what's deployed in GKE
+                                   will look in subdirectories where argo app is deployed i.e 'argo app diff -a app1' will diff against git repo where app1 manifests reside
 --all: diffs all apps on current branch against what's deployed in GKE (default behavior)`;
 
 const BotHelp = Object.freeze({Diff: diffHelp,
@@ -161,6 +163,11 @@ export class ArgoBot {
             } else if (arr[2] && (arr[2] === BotDiffActions.Dir || arr[2] === BotDiffActions.DirShort) && arr[3]) {
                 this.appContext.log("Received diff command with" + BotDiffActions.Dir);
                 jsonResponse = await this.argoAPI.fetchAppsWithDirectory(arr[3]);
+                return await this.handleDiff(jsonResponse);
+            } else if (arr[2] && (arr[2] === BotDiffActions.App || arr[2] === BotDiffActions.AppShort) && arr[3]) {
+                this.appContext.log("Received diff command with" + BotDiffActions.App);
+                const appDir = await this.argoAPI.fetchDirForAppWithName(arr[3]);
+                jsonResponse = {items: [{metadata: { name: arr[3]}, spec: { source: { path: appDir } } }] };
                 return await this.handleDiff(jsonResponse);
             } else if (arr[2]) {
                 // if arr[2] is not empty, then it's not a valid diff arg, notify user

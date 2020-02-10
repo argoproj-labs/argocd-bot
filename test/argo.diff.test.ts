@@ -306,4 +306,38 @@ describe("argo-cd-bot", () => {
 
         await probot.receive({name: "issue_comment", payload: autoSyncPayload})
     })
+
+    test("diff comment posted on PR with --app flag", async() => {
+        nock("https://api.github.com")
+            .post("/app/installations/2/access_tokens")
+            .reply(200, {token: "test"})
+
+        // test constants
+        const branch = "newBranch"
+        const appDiff = "===== App Diff ===="
+        const appName = "app1"
+        const appDir = "projects/app1"
+
+        nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch}}})
+        nock("https://api.github.com").get("/repos/robotland/test/pulls").reply(200, {"data": {"number": 109, "head": { "ref": branch, "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e", "repo": { "id": 1296269, "node_id": "MDEwOlJlcG9zaXRvcnkxMjk2MjY5", "name": "Hello-World",  "full_name": "octocat/Hello-World", "owner": { "login": "octocat" }}}}});
+        // bot should post status check on PR
+        nock("https://api.github.com").post("/repos/octocat/Hello-World/statuses/6dcb09b5b57875f334f61aebed695e2e4193db5e", /success/).reply(200)
+
+        const child_process = require("child_process")
+        const execStub = sandbox.stub(child_process, "exec")
+        // first exec, will fork script to clone repo
+        execStub.onCall(0).yields(false)
+
+        nock("http://" + argoCDServer).get("/api/v1/applications/" + appName)
+            .reply(200, {"metadata": {}, "spec": {"source": { "path": appDir } } })
+        execStub.onCall(1).yields(false, appDiff)
+
+        // regex match post body should match diff produced by API
+        nock("https://api.github.com").post("/repos/robotland/test/issues/109/comments", /===== App Diff ====/).reply(200)
+        nock("https://api.github.com").post("/repos/robotland/test/issues/109/comments", /If Auto-sync is enabled just merge this PR to deploy the above changes/).reply(200)
+
+        let diffPayload = JSON.parse(JSON.stringify(payloadPr1))
+        diffPayload["comment"]["body"] = "argo diff --app " + appName
+        await probot.receive({name: "issue_comment", payload: diffPayload})
+    })
 })
