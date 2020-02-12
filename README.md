@@ -80,7 +80,7 @@ Here is a description of each parameter:
 - `WEBHOOK_SECRET` is the secret configured when creating the Github app (can be left empty if no secret is specified).
 - `PRIVATE_KEY_PATH` is the path to the private key generated for the Github app, this is usually a `.pem` file.
 - `ARGOCD_SERVER`, this is the ip address/hostname of the argocd server.
-- `ARGOCD_AUTH_TOKEN` it is recommended to generate an automation token using the `/api/v1/projects/{project}/roles/{role}/token` API. For more information [see](https://github.com/argoproj/argo-cd/blob/master/docs/security.md#authentication)
+- `ARGOCD_AUTH_TOKEN` it is recommended to generate an automation token using the `/api/v1/projects/{project}/roles/{role}/token` API. For more information [see](https://argoproj.github.io/argo-cd/operator-manual/security/#authentication)
 
 ### Kubernetes Deployment
 Docker images of `argocd-bot` are built [here](https://cloud.docker.com/repository/docker/marcb1/argocd-bot), they are provided as part of releases [here](https://github.com/marcb1/argocd-bot/releases)
