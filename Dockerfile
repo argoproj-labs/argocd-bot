@@ -3,9 +3,16 @@ FROM argoproj/argocd:$ARGOCD_VERSION as argocd
 
 FROM node:11.10.1-slim
 
-RUN apt-get update && apt-get install -y git apt-utils sudo python make vim procps && \
+RUN apt-get update && \
+    apt-get --no-install-recommends install -y git apt-utils sudo python make vim procps && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/* \
+        /var/tmp/* \
+        /usr/share/man \
+        /usr/share/doc \
+        /usr/share/doc-base
 
 WORKDIR /home/argocd/argocd-bot
 
