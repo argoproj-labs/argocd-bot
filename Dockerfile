@@ -6,7 +6,7 @@ FROM node:11.10.1-slim
 RUN apt-get update && \
     apt-get --no-install-recommends install -y git apt-utils sudo python make vim procps && \
     apt-get clean && \
-    && rm -rf \
+    rm -rf \
         /var/lib/apt/lists/* \
         /tmp/* \
         /var/tmp/* \
