@@ -16,7 +16,7 @@ export class ArgoAPI {
         this.fetchAutoSyncAppsFilter = this.fetchAllAppsFilter + ",items.spec.syncPolicy.automated";
     }
 
-    public async fetchHttp(url, token) {
+    public async fetchHttp(url: string, token: string) {
         // swagger UI for API docs: https://${ARGO_CD_SERVER}/swagger-ui
         // curl command:  curl -v -H 'Cookie: argocd.token=${ARGO_API_TOKEN} http://${ARGO_CD_SERVER}/api/v1/applications
         const response = await nodeFetch(url, { method: "GET", headers: { Cookie: "argocd.token=" + this.token } });
@@ -47,7 +47,7 @@ export class ArgoAPI {
         return responseJson;
     }
 
-    public async fetchAppsWithDirectory(dir) {
+    public async fetchAppsWithDirectory(dir: string) {
         const url = "http://" + this.serverIP + "/api/v1/applications?fields=" + this.fetchAllAppsFilter;
         const responseJson = await this.fetchHttp(url, this.token);
         const jsonItems = responseJson["items"];
@@ -75,7 +75,7 @@ export class ArgoAPI {
         return responseJson;
      }
 
-    public async fetchDirForAppWithName(appName) {
+    public async fetchDirForAppWithName(appName: string) {
         const url = "http://" + this.serverIP + "/api/v1/applications/" + appName;
         const responseJson = await this.fetchHttp(url, this.token);
 
@@ -86,7 +86,7 @@ export class ArgoAPI {
         return responseJson["spec"]["source"]["path"];
     }
 
-    private async fetchAllApplications() {
+    public async fetchAllApplications() {
         const url = "http://" + this.serverIP + "/api/v1/applications?fields=" + this.fetchAllAppsFilter;
         const responseJson = await this.fetchHttp(url, this.token);
         return responseJson;

@@ -3,6 +3,7 @@ import { PrLock } from "./singleton-pr-lock";
 import { ArgoAPI } from "./argo-api";
 import { ArgoBotConfig } from "./argo-bot-config";
 import { to } from "./to";
+import { Context } from "probot";
 
 // bot command that triggers this bot to wake up
 const BotCommand = "argo";
@@ -33,6 +34,13 @@ const BotHelp = Object.freeze({Diff: diffHelp,
                                Unlock: "removes lock held by current PR, allows other PR's to run bot"});
 
 export class ArgoBot {
+    constructor(appContext: Context) {
+        this.botCommand = BotCommand;
+        this.appContext = appContext;
+        this.argoConfig = new ArgoBotConfig();
+        this.argoAPI = new ArgoAPI(this.appContext, this.argoConfig.getAPIToken(), this.argoConfig.getServerIP());
+    }
+
     // checks if command is valid and can be processed by ArgoBot
     // a valid command looks like so "argo [action]"
     public static isBotCommand(command) {
@@ -47,67 +55,60 @@ export class ArgoBot {
 
     // responde with comment on current issue in context
     // ArgoBot is triggered for PR comments, so this will create a new comment on the PR
-    private static async respondWithComment(context, comment) {
+    private static async respondWithComment(context: Context, comment) {
         const response = context.issue({body: comment});
         await context.github.issues.createComment(response);
     }
 
     // sets the status check on a PR, example args:
     // state="success", description="message", context="argo/diff_success"
-    private static async setPrStatusCheck(context, stateString, descriptionString, contextString) {
+    private static async setPrStatusCheck(context: Context, stateString, descriptionString, contextString) {
         const prNumber = context.payload.issue.number;
         const branchContext = await ArgoBot.getCurrentBranchContext(context, prNumber);
         await context.github.repos.createStatus({owner: branchContext.head.repo.owner.login, repo: branchContext.head.repo.name, sha: branchContext.head.sha, state: stateString, description: descriptionString, context: contextString});
     }
 
-    private static async setDiffStatusCheck(context, state) {
+    private static async setDiffStatusCheck(context: Context, state) {
         context.log.info("setting status check=argo/diff state=", state);
         await ArgoBot.setPrStatusCheck(context, state, "argo diff status", "argo/diff");
     }
 
-    private static async setSyncStatusCheck(context, state) {
+    private static async setSyncStatusCheck(context: Context, state) {
         context.log.info("setting status check=argo/sync state=", state);
         await ArgoBot.setPrStatusCheck(context, state, "argo sync status", "argo/sync");
     }
 
     // gets current branch name for pr with a specific number
-    private static async getCurrentBranchContext(context, prNumber) {
+    private static async getCurrentBranchContext(context: Context, prNumber) {
         // I couldn't find an API call that filters this properly
         let prs = await context.github.pullRequests.list(context.repo());
-        prs = prs["data"];
-        for (const key in prs) {
-            if (prs[key]["number"] === prNumber) {
-                return prs[key];
+        const data = prs["data"];
+        for (const key in data) {
+            if (data[key]["number"] === prNumber) {
+                return data[key];
              }
         }
         context.log.error("pr not found!");
     }
 
     // gets current branch name for pr with a specific number
-    private static async getCurrentBranch(context, prNumber) {
-        const branchContext = await ArgoBot.getCurrentBranchContext(context, prNumber);
+    private static async getCurrentBranch(context: Context, prNumber) {
+        const branchContext = await ArgoBot.getCurrentBranchContext(context: Context, prNumber);
         return branchContext["head"]["ref"];
     }
 
     // ---------------------
     // data members here
-    private botCommand;
-    private appContext;
-    private argoConfig;
-    private argoAPI;
+    private botCommand: typeof BotCommand;
+    private appContext: Context;
+    private argoConfig: ArgoBotConfig;
+    private argoAPI: ArgoAPI;
 
     // ----------------------
     // non-static functions here
 
-    constructor(appContext) {
-        this.botCommand = BotCommand;
-        this.appContext = appContext;
-        this.argoConfig = new ArgoBotConfig();
-        this.argoAPI = new ArgoAPI(this.appContext, this.argoConfig.getAPIToken(), this.argoConfig.getServerIP());
-    }
-
     // handles command sent by user on PR
-    public async handleCommand(command) {
+    public async handleCommand(command: string) {
         if (!ArgoBot.isBotCommand(command)) {
             this.appContext.log.error("received non-bot command:" + command);
             return;
@@ -199,7 +200,7 @@ ${BotActions.Diff}: ${BotHelp.Diff}
     // executes argo commands in local shell environment, and returns stdout
     // optional failingExitCode which will return an error, by default exit code = 1 will error
     // this is needed since 'argo diff' returns exit 1 on success when a diff is found
-    private async execCommand(command, failingExitCode = 1) {
+    private async execCommand(command: string, failingExitCode = 1) {
         const exec = require("child_process").exec;
         const p = new Promise((done, failed) => {
             exec(command, (err, stdout, stderr) => {
@@ -282,7 +283,7 @@ ${BotActions.Rollback}: ${BotHelp.Rollback}
         await ArgoBot.respondWithComment(this.appContext, error);
     }
 
-    private buildErrString(command, stderr) {
+    private buildErrString(command: string, stderr) {
         const errString = `
 \`${command}\` returned an error:
 \`\`\`
@@ -292,7 +293,7 @@ ${stderr}
         return errString;
     }
 
-    private async handleRollback(action, appName) {
+    private async handleRollback(action: string, appName: string) {
         let rollbackCommand = "./src/sh/rollback_latest_deployment.sh ";
         if (action) {
             rollbackCommand += action + " " + appName;
@@ -318,7 +319,7 @@ ${syncRes.stdout}
         await ArgoBot.respondWithComment(this.appContext, res);
      }
 
-    private async handleInfo(appName) {
+    private async handleInfo(appName: string) {
         const command = "./src/sh/view_app_info.sh " + appName;
         this.appContext.log("exec-ing: " + command);
         let err, syncRes;
@@ -336,7 +337,7 @@ ${syncRes.stdout}
         await ArgoBot.respondWithComment(this.appContext, res);
     }
 
-    private async handleSync(appName) {
+    private async handleSync(appName: string) {
         await ArgoBot.setSyncStatusCheck(this.appContext, "pending");
 
         const prNumber = this.appContext.payload.issue.number;

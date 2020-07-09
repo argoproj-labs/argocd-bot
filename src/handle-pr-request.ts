@@ -1,12 +1,7 @@
-module.exports = {
-    handlePrClosed,
-    handlePrComment,
-};
 
+import { Context } from 'probot';
 import { ArgoBot } from "./argo-bot";
 import { PrLock } from "./singleton-pr-lock";
-
-import * as getConfig from "probot-config";
 
 // TODO use yaml file instead of node env in the future
 /*const CONFIG_FILE = "argocd-bot.yaml"
@@ -14,7 +9,7 @@ const DEFAULT_CONFIG = {
   reposDir: "repos"
 }*/
 
-async function handlePrClosed(context, config) {
+export async function handlePrClosed(context: Context) {
     const prNumber = context.payload.pull_request.number;
 
     context.log("handlePrClosed, pr#" + prNumber);
@@ -24,7 +19,7 @@ async function handlePrClosed(context, config) {
     context.log("handlePrClosed, unlockStatus=" + unlockStatus);
 }
 
-async function handlePrComment(context, config) {
+export async function handlePrComment(context: Context) {
     // strip away new lines from the comment string if any exist
     let prComment: string = context.payload.comment.body.replace(/(\r\n|\n|\r)/gm, "");
     // replace multiple spaces with a single space
