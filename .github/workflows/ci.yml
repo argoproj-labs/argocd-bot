@@ -1,0 +1,134 @@
+################################################################################
+# This workflow builds a docker image & publishes to Google Container Registry #
+# on the target GCP Project for deployment in GKE clusters, then updates the   #
+# GitOps repo (quizlet-infrastructure) with the current revision tag           #
+################################################################################
+
+# Requirements:
+# -------------
+# 1. The following settings are setup as part of the ci_workflows_approle in the vault to run the CI workflow:
+#    GCP_PROJECT with the name of the project.
+#    GCP_EMAIL with the service account email.
+#    GCP_KEY with the Base64 encoded JSON service account key.
+#    Source: (https://github.com/GoogleCloudPlatform/github-actions/tree/docs/service-account-key/setup-gcloud#inputs).
+#    Vault App Role Source: https://github.com/quizlet/quizlet-infra-vault/pull/23.
+#
+# 2. Set up the vault id and secret for the role containing the secrets needed for the workflow.
+#    VAULT_ROLE_ID with the role ID generated in the vault for CI.
+#    VAULT_ROLE_SECRET with the secret associated with the aforementioned role ID.
+
+name: Build Image & Update GitOps Repo
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# Environment variables available to all jobs and steps in this workflow
+env:
+  ## This value will change depending on the desired GitOps repo
+  GITOPS_REPO: quizlet/quizlet-infrastructure
+
+  ## These values should NOT be adjusted in a new CD flow
+  GITHUB_SHA: ${{ github.sha }}
+  GITHUB_REPOSITORY: ${{ github.repository }}
+  GITHUB_ACTOR: ${{ github.actor }}
+  COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+
+  ## Vars for pushing docker image to GCR
+  GITHUB_USERNAME: quizlet-git-bot
+  REGISTRY_HOSTNAME: gcr.io
+
+jobs:
+  setup-build-validate-update:
+    name: Setup, build, validate & publish
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout sidecar-geoip repo
+        uses: actions/checkout@v2
+
+      - name: Get secrets from Vault
+        id: secrets
+        uses: RichiCoder1/vault-action@v1.0.1
+        with:
+          url: https://vault.dev.qzlt.io/
+          method: approle
+          roleId:  ${{ secrets.VAULT_ROLE_ID }}
+          secretId: ${{ secrets.VAULT_ROLE_SECRET }}
+          secrets: |
+            ci/github/access_token       value | GITHUB_TOKEN ;
+            ci/gcp/project_id            value | GCP_PROJECT ;
+            ci/gcp/service_account_key   value | GCP_SA_KEY ;
+            ci/gcp/client_account_email  value | GCP_EMAIL
+
+      # Setup gcloud CLI: https://github.com/GoogleCloudPlatform/github-actions/tree/docs/service-account-key/setup-gcloud#inputs
+      - name: Install python-openssl
+        run: sudo apt-get install -y python-openssl -o=Dpkg::Use-Pty=0
+
+      - name: Setup gcloud CLI
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '291.0.0'
+          project_id: ${{ steps.secrets.outputs.GCP_PROJECT }}
+          service_account_email: ${{ steps.secrets.outputs.GCP_EMAIL }}
+          service_account_key: ${{ steps.secrets.outputs.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      # Configure docker to use the gcloud command-line tool as a credential helper
+      - name: Setup docker to auth to GCP via gcloud CLI
+        run: gcloud auth configure-docker
+
+      # Action to expose useful env variables: https://github.com/FranzDiebold/github-env-vars-action
+      # Vars exposed: GITHUB_REPOSITORY_OWNER, GITHUB_REPOSITORY_NAME, GITHUB_REF_NAME, GITHUB_SHA_SHORT
+      - name: Short env vars
+        uses: franzdiebold/github-env-vars-action@v1.0.0
+
+      # Build the Docker image
+      - name: Build docker image
+        run: |
+          docker build -t "$REGISTRY_HOSTNAME"/"$GCP_PROJECT"/"$GITHUB_REPOSITORY_NAME":"$GITHUB_SHA" \
+            --build-arg GITHUB_USERNAME="$GITHUB_USERNAME" \
+            --build-arg GITHUB_TOKEN="${{ steps.secrets.outputs.GITHUB_TOKEN }}" .
+
+      - name: Logging for PR only
+        if: github.ref != 'refs/heads/master'
+        run: echo "The remaining steps will not be executed while not on master branch"
+
+      # push the Docker image to Google Container Registry
+      - name: Publish docker image to GCR
+        # if: github.ref == 'refs/heads/master'
+        run: |
+          docker push "$REGISTRY_HOSTNAME"/"${{ steps.secrets.outputs.GCP_PROJECT }}"/"$GITHUB_REPOSITORY_NAME":"$GITHUB_SHA"
+          echo "Successfully pushed tag ${GITHUB_SHA} to GCR"
+
+      # The remaining steps update the geoipRevision value in GitOps repo (quizlet-infrastructure) 
+      # - name: Strip new lines from commit message
+      #   id: strip_newlines
+      #   run: |
+      #     SAFE_COMMIT_MESSAGE="${COMMIT_MESSAGE%%\\n*}"
+      #     echo "::set-output name=safe_commit_message::${SAFE_COMMIT_MESSAGE}"
+
+      # - name: Update GitOps repo with docker build tag via repository dispatch event
+      #   if: github.ref == 'refs/heads/master'
+      #   uses: peter-evans/repository-dispatch@v1.1.1
+      #   with:
+      #     token: ${{ steps.secrets.outputs.GITHUB_TOKEN }}
+      #     repository: ${{ env.GITOPS_REPO }}
+      #     event-type: update-docker-tag
+      #     client-payload: '{"trigger_sha": "${{ env.GITHUB_SHA }}", "commit_message": "${{ steps.strip_newlines.outputs.safe_commit_message }}", "source_repo": "${{ env.GITHUB_REPOSITORY_NAME }}", "actor": "${{ github.actor }}"}'
+
+      # - name: Send slack message to channel upon failed workflow run
+      #   if: failure() && github.ref == 'refs/heads/master'
+      #   env:
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #   run: |
+      #     curl -X POST \
+      #     --data-urlencode "payload={\"channel\": \"${SLACK_CHANNEL}\", \"username\": \"C. D. Bot\", \"icon_emoji\": \":ship:\", \"blocks\": [ \
+      #     {\"type\": \"section\", \"text\": {\"type\": \"mrkdwn\", \"text\": \":exclamation: *Uh-oh!* An error occurred during an automated CD workflow run:\"}}, \
+      #     {\"type\": \"section\", \"fields\": [{\"type\": \"mrkdwn\", \"text\": \"*Triggering Repo* \n <https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}/checks|\`${GITHUB_REPOSITORY#quizlet/}\`> \"}, {\"type\": \"mrkdwn\", \"text\": \"*Triggering Commit* \n <https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}|${GITHUB_SHA:0:7}> \"}]}, \
+      #     {\"type\": \"section\", \"text\": {\"type\": \"mrkdwn\", \"text\": \"[ merged by *${GITHUB_ACTOR}*: <https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}|\`${COMMIT_MESSAGE:0:50}..\`> ]\"}}, \
+      #     {\"type\": \"section\", \"text\": {\"type\": \"mrkdwn\", \"text\": \"See the workflow run logs to debug this issue: \n <https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}/checks|GH Actions workflow logs for commit ${GITHUB_SHA:0:7}>\"}}, \
+      #     {\"type\": \"divider\"}]}" \
+      #     "${SLACK_WEBHOOK}"
