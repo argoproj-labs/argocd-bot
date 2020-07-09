@@ -363,16 +363,17 @@ ${syncRes.stdout}
     }
 
     private async handleDiff(jsonArgoCDApps) {
-        const cloneUrl = "https://" + this.argoConfig.getGithubToken() + ":x-oauth-basic@" + this.argoConfig.getGithubRepo();
+        const repo = this.appContext.repo();
+        const cloneUrl = "https://" + this.argoConfig.getGithubToken() + ":x-oauth-basic@github.com/" + repo.owner + '/' + repo.repo;
+
         const prNumber = this.appContext.payload.issue.number;
         const curBranch = await ArgoBot.getCurrentBranch(this.appContext, prNumber);
-        const repoDir = "cloned_repos/pr_" + prNumber;
+        const repoDir = "cloned_repos/" + repo.repo + "/pr_" + prNumber;
 
         const cloneCommand = "./src/sh/clone_repo.sh " + repoDir + " " + cloneUrl + " " + curBranch;
         this.appContext.log("exec-ing: " + cloneCommand);
         // clone repo and check out current branch
-        let err, cloneRes;
-        [err, cloneRes] = await to(this.execCommand(cloneCommand));
+        let [err, cloneRes] = await to(this.execCommand(cloneCommand));
         if (err) {
             const errString = this.buildErrString("git clone and checkout of " + curBranch, err.stderr);
             this.appContext.log.error(errString);
