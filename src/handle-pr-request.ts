@@ -37,7 +37,6 @@ async function handlePrComment(context, config) {
         return;
     }
 
-    const repo = context.payload.repository;
     const bot = new ArgoBot(context);
     await bot.handleCommand(prComment);
 }
